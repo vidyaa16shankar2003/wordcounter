@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+    <h1>Word counter</h1>
+    <textarea id="textInput" rows="10" cols="50"></textarea>
+    <button id="countButton">Count</button>
+    <p id="result"></p>
+
+    <script>
+        var textInput=document.getElementById("textInput");
+        var countButton=document.getElementById("countButton");
+        var resultDisplay=document.getElementById("result");
+
+        countButton.addEventListener("click", countWords);
+
+        function syllableCounter(word){
+            word=word.toLowerCase();
+            if (word.length<=3){ 
+                return 1; 
+            }
+            word=word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
+            word=word.replace(/^y/, '');
+            try{
+                return word.match(/[aeiouy]{1,2}/g).length;
+            } 
+            catch(error){
+                return 0;
+            }
+        }
+
+        function countWords(){
+
+            var text=textInput.value;
+            var words=text.split(/\s+/).filter(word=>word!=="");
+            var sentences=text.split(/[\.\!\?]\s|\.\.\.\s/).filter(sentence=>sentence.trim()!=='');
+            var charnospace=0;
+            var paragraphs=text.split("\n").filter(_=>_);
+
+            for (let i=0; i<text.length; i++){
+                if (text[i]!=" "){
+                    charnospace+=1;
+                }
+            }
+
+            var avgsentlength=words.length/sentences.length;
+
+            var complexwords=[];
+            var syl='';
+            var wordsylnum=0;
+            var countsyl=0;
+
+            if (words==''){
+                return false;
+            } 
+            for (let i=0; i<words.length; i++){
+                if (wordsylnum==0){
+                    syl=syllableCounter(words[i]);
+                    wordsylnum=syl;
+                    if (syl>3){
+                        complexwords.push(words[i]);
+                    }
+                } 
+                else{
+                    syl=syllableCounter(words[i]);
+                    if (syl>3){
+                        complexwords.push(words[i]);
+                    }
+                    wordsylnum=(wordsylnum+syl);
+                }
+            }
+            
+            var gunningfog=Math.round(0.4*(avgsentlength+100*(complexwords.length/words.length)));
+
+            var avgsyl=Math.ceil(wordsylnum/words.length);
+
+            var avgwordlen=Math.round(text.length/words.length);
+
+            var colemanliau=(5.125*(charnospace/words.length)-0.3*(sentences.length/words.length)-15.8).toFixed(2);
+
+            var fleschkincaid=(0.39*(words.length/sentences.length)+11.8*(wordsylnum/words.length)-15.59).toFixed(2);
+
+            var readindex=(4.71*(charnospace/words.length)+0.5*(words.length/sentences.length)-21.43).toFixed(2);
+
+            var wordoccur={};
+
+            for (let i of words){
+                if (wordoccur[i]){
+                    wordoccur[i]++;
+                } 
+                else{
+                    wordoccur[i]=1;
+                }
+            }
+
+            var wordocc="";
+
+            var keys=Object.keys(wordoccur);
+
+            for (let i=0; i<keys.length; i++){
+                wordocc+=keys[i]+" : "+wordoccur[keys[i]]+"<br>";
+            }
+
+            var output=words.length+" words <br>"+text.length+" characters(with space) <br>"+charnospace+" characters(without space) <br>"+sentences.length+" sentences <br>"+paragraphs.length+" paragraphs <br>"+avgsentlength+" average sentence length <br>"+gunningfog+" gunning fog <br>"+avgsyl+" average syllables length <br>"+avgwordlen+" average word length <br>"+colemanliau+" coleman liau <br>"+fleschkincaid+" flesch kincaid <br>"+readindex+" readibility index <br>" + wordocc;
+
+            document.getElementById("result").innerHTML=output;
+
+        }
+    </script>
+</body>
+</html>
